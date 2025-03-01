@@ -25,7 +25,8 @@ For example this makes these plugins automatically compatible with each other:
 
 https://github.com/max1mde/PassengerAPI/assets/114857048/224a9df1-3b22-4176-bfce-40a555fc71a2
 
-
+> [!WARNING]  
+> PassengerAPI might not be compatible with ProtocolLib.
 
 > [!IMPORTANT]  
 > This plugin **works out-of-the-box!**  

@@ -71,6 +71,7 @@ Gradle:
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
+    maven { url 'https://maven.evokegames.gg/snapshots' }
 }
 
 dependencies {

@@ -1,12 +1,19 @@
+<div align="center">
+<a href="https://discord.gg/2UTkYj26B4" target="_blank"><img src="https://img.shields.io/badge/Discord_Server-7289DA?style=flat&logo=discord&logoColor=white" alt="Join Discord Server" style="border-radius: 15px; height: 20px;"></a>  
+</div>
+
+[![Card](https://fancy-readme-stats.vercel.app/api/pin-wide/?username=maximjsx&repo=PassengerAPI&dark_bg=3&theme=snow&height=150)](https://github.com/max1mde/fancy-readme-stats)
+
+
 # PassengerAPI
 PassengerAPI is a Java API that allows you to manage passengers (entities attached to other entities) for multiple plugins.
 It works as a plugin and provides an easy-to-use interface for adding, removing, and retrieving passengers for any entity,
 regardless of whether the entity exists or not (NPC's, packet based entities...).
 
 # Why Use PassengerAPI?
-It solves compatibility issues that may arise when different plugins create entities    
-by sending packets to players and setting them as passengers.  
-This can lead to conflicts and unintended behavior like unmounting of previous set passengers by other plugins.
+It solves compatibility issues that can occur when different plugins create entities  
+**by sending packets** to players and setting them as passengers.  
+This can lead to conflicts and unintended behavior like **unmounting of previous set passengers** by other plugins.
 
 For example this makes these plugins automatically compatible with each other:
 - Better Chat Bubbles
@@ -18,7 +25,8 @@ For example this makes these plugins automatically compatible with each other:
 
 https://github.com/max1mde/PassengerAPI/assets/114857048/224a9df1-3b22-4176-bfce-40a555fc71a2
 
-
+> [!WARNING]  
+> PassengerAPI might not be compatible with ProtocolLib.
 
 > [!IMPORTANT]  
 > This plugin **works out-of-the-box!**  
@@ -51,6 +59,7 @@ AutoPassengerDetection:
   SetPassengerPacket: true
   EntityDestroyPacket: true
   VehicleExitEvent: true
+  VehicleExitPacket: true
 ```
 
 
@@ -63,13 +72,14 @@ Gradle:
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
+    maven { url 'https://maven.evokegames.gg/snapshots' }
 }
 
 dependencies {
-    implementation 'com.github.max1mde:PassengerAPI:1.0.1'
+    implementation 'com.github.maximjsx:PassengerAPI:<VERSION>'
 }
 ```
-(For maven: https://jitpack.io/#max1mde/PassengerAPI/1.0.0)  
+(More information: https://jitpack.io/#maximjsx/PassengerAPI)  
 
 2. Add the following line to your `plugin.yml` file:
 ```
@@ -109,28 +119,28 @@ Try using Entity#addPassengers() instead if its a real entity... PassengerAPI wi
 
 ```java
 // Add a single passenger
-passengerActions.addPassenger(targetEntityId, passengerEntityId);
+passengerActions.addPassenger(<async>, targetEntityId, passengerEntityId);
 
 // Add multiple passengers
-passengerActions.addPassengers(targetEntityId, Set.of(passenger1Id, passenger2Id, ...));
+passengerActions.addPassengers(<async>, targetEntityId, Set.of(passenger1Id, passenger2Id, ...));
 
 // Remove a single passenger
-passengerActions.removePassenger(targetEntityId, passengerEntityId);
+passengerActions.removePassenger(<async>, targetEntityId, passengerEntityId);
 
 // Remove multiple passengers
-passengerActions.removePassengers(targetEntityId, Set.of(passenger1Id, passenger2Id, ...));
+passengerActions.removePassengers(<async>, targetEntityId, Set.of(passenger1Id, passenger2Id, ...));
 
 // Remove all passengers for a target entity
-passengerActions.removeAllPassengers(targetEntityId);
+passengerActions.removeAllPassengers(<async>, targetEntityId);
 
 // Get all passengers for a target entity
 Set<Integer> passengers = passengerActions.getPassengers(targetEntityId);
 
 // Remove global passengers (passengers set by all plugins)
-passengerActions.removeGlobalPassengers(targetEntityId, Set.of(passenger1Id, passenger2Id, ...));
+passengerActions.removeGlobalPassengers(<async>, targetEntityId, Set.of(passenger1Id, passenger2Id, ...));
 
 // Remove all global passengers for a target entity (passengers set by all plugins)
-passengerActions.removeAllGlobalPassengers(targetEntityId);
+passengerActions.removeAllGlobalPassengers(<async>, targetEntityId);
 
 // Get all global passengers for a target entity (passengers set by all plugins)
 Set<Integer> globalPassengers = passengerActions.getGlobalPassengers(targetEntityId);
@@ -145,7 +155,7 @@ PassengerAPI also provides events that you can listen to and handle accordingly:
 
 ```java
 @EventHandler
-public void onAddPassenger(AddPassengerEvent event) {
+public void onAddPassenger(AsyncAddPassengerEvent event) {
     // The name of the plugin which tries to add these passengers
     String pluginName = event.getPluginName();
     int targetEntity = event.getTargetEntityID();
@@ -153,7 +163,7 @@ public void onAddPassenger(AddPassengerEvent event) {
 }
 
 @EventHandler
-public void onRemovePassenger(RemovePassengerEvent event) {
+public void onRemovePassenger(AsyncRemovePassengerEvent event) {
     String pluginName = event.getPluginName();
     int targetEntity = event.getTargetEntityID();
     Set<Integer> removedPassengers = event.getPassengerList();
@@ -161,7 +171,7 @@ public void onRemovePassenger(RemovePassengerEvent event) {
 }
 
 @EventHandler
-public void onPassengerPacket(PassengerPacketEvent event) {
+public void onPassengerPacket(AsyncPassengerPacketEvent event) {
     int targetEntity = event.getTargetEntityID();
     Set<Integer> passengers = event.getPassengerList();
     // Which players should receive the packet (You can modify that list)

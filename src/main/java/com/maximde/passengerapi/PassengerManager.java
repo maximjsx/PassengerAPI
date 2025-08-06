@@ -7,6 +7,7 @@ import com.maximde.passengerapi.events.AsyncPassengerPacketEvent;
 import com.maximde.passengerapi.events.AsyncRemovePassengerEvent;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -333,6 +334,9 @@ public class PassengerManager {
         AsyncPassengerPacketEvent passengerPacketEvent = new AsyncPassengerPacketEvent(async, targetEntity, allPassengersList, receivers);
         WrapperPlayServerSetPassengers packet = new WrapperPlayServerSetPassengers(targetEntity, allPassengersArray);
         Bukkit.getPluginManager().callEvent(passengerPacketEvent);
-        passengerPacketEvent.getPacketReceivers().forEach(player -> this.playerManager.sendPacketSilently(player, packet));
+        passengerPacketEvent.getPacketReceivers().forEach(player -> {
+
+            this.playerManager.sendPacketSilently(player, packet);
+        });
     }
 }

@@ -28,8 +28,7 @@ public class PacketSendListener implements PacketListener {
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
-
-        if(event.getPacketType() == PacketType.Play.Server.SET_PASSENGERS && this.passengerAPI.getPassengerConfig().isListenToPassengerSet()) {
+        if(event.getPlayer() != null && event.getPacketType() == PacketType.Play.Server.SET_PASSENGERS && this.passengerAPI.getPassengerConfig().isListenToPassengerSet()) {
             WrapperPlayServerSetPassengers packet = new WrapperPlayServerSetPassengers(event);
             for (int passenger : packet.getPassengers()) {
                 isPlayer(passenger, ((Player) event.getPlayer()).getWorld()).map(player -> passengerAPI.getVehicles().put(player, passenger));

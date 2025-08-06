@@ -72,10 +72,9 @@ public class PassengerManager {
      * Internal method for the PassengerAPI
      * Don't even try to use it somehow in your own plugin!
      */
-    public void removePassengers(int[] passengerIDs, boolean sendPackets) {
-        Bukkit.getScheduler().runTask(passengerAPI, bukkitTask -> {
+    public void removePassengers(boolean async, int[] passengerIDs, boolean sendPackets) {
             Set<Integer> passengerSet = Arrays.stream(passengerIDs).boxed().collect(Collectors.toSet());
-            AsyncRemovePassengerEvent removePassengerEvent = new AsyncRemovePassengerEvent(false,-1, passengerSet, PLUGIN_NAME);
+            AsyncRemovePassengerEvent removePassengerEvent = new AsyncRemovePassengerEvent(async,-1, passengerSet, PLUGIN_NAME);
             Bukkit.getPluginManager().callEvent(removePassengerEvent);
             if (removePassengerEvent.isCancelled()) return;
 
@@ -99,30 +98,26 @@ public class PassengerManager {
                     passengersHashmap.remove(entry.getKey());
                 }
             }
-
             if (sendPackets) sendPassengerPackets(false);
-        });
     }
 
     /**
      * Internal method for the PassengerAPI
      * Don't even try to use it somehow in your own plugin!
      */
-    public void addPassengers(int targetEntity, int[] passengerIDs, boolean sendPackets) {
-        Bukkit.getScheduler().runTask(passengerAPI, bukkitTask -> {
+    public void addPassengers(boolean async, int targetEntity, int[] passengerIDs, boolean sendPackets) {
             Set<Integer> passengerSet = Arrays.stream(passengerIDs)
                     .boxed()
                     .collect(Collectors.toSet());
 
-            AsyncAddPassengerEvent addPassengerEvent = new AsyncAddPassengerEvent(false, targetEntity, passengerSet, PLUGIN_NAME);
+            AsyncAddPassengerEvent addPassengerEvent = new AsyncAddPassengerEvent(async, targetEntity, passengerSet, PLUGIN_NAME);
             Bukkit.getPluginManager().callEvent(addPassengerEvent);
             if (addPassengerEvent.isCancelled()) return;
             passengersHashmap.computeIfAbsent(PLUGIN_NAME, k -> new HashMap<>())
                     .computeIfAbsent(targetEntity, k -> new HashSet<>())
                     .addAll(passengerSet);
 
-            if (sendPackets) sendPassengerPacket(false,targetEntity);
-        });
+            if (sendPackets) sendPassengerPacket(async, targetEntity);
     }
 
 

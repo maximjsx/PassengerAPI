@@ -33,13 +33,13 @@ public class PacketSendListener implements PacketListener {
             for (int passenger : packet.getPassengers()) {
                 isPlayer(passenger, ((Player) event.getPlayer()).getWorld()).map(player -> passengerAPI.getVehicles().put(player, passenger));
             }
-            passengerAPI.getPassengerManager().addPassengers(packet.getEntityId(), packet.getPassengers(), true);
+            passengerAPI.getPassengerManager().addPassengers(true, packet.getEntityId(), packet.getPassengers(), true);
             event.setCancelled(true);
         }
 
         if(event.getPacketType() == PacketType.Play.Server.DESTROY_ENTITIES && this.passengerAPI.getPassengerConfig().isListenToEntityDestroy()) {
             WrapperPlayServerDestroyEntities packet = new WrapperPlayServerDestroyEntities(event);
-            passengerAPI.getPassengerManager().removePassengers(packet.getEntityIds(), false);
+            passengerAPI.getPassengerManager().removePassengers(true, packet.getEntityIds(), false);
         }
     }
 

@@ -106,18 +106,18 @@ public class PassengerManager {
      * Don't even try to use it somehow in your own plugin!
      */
     public void addPassengers(boolean async, int targetEntity, int[] passengerIDs, boolean sendPackets) {
-            Set<Integer> passengerSet = Arrays.stream(passengerIDs)
-                    .boxed()
-                    .collect(Collectors.toSet());
+        Set<Integer> passengerSet = Arrays.stream(passengerIDs)
+                .boxed()
+                .collect(Collectors.toSet());
 
-            AsyncAddPassengerEvent addPassengerEvent = new AsyncAddPassengerEvent(async, targetEntity, passengerSet, PLUGIN_NAME);
-            Bukkit.getPluginManager().callEvent(addPassengerEvent);
-            if (addPassengerEvent.isCancelled()) return;
-            passengersHashmap.computeIfAbsent(PLUGIN_NAME, k -> new HashMap<>())
-                    .computeIfAbsent(targetEntity, k -> new HashSet<>())
-                    .addAll(passengerSet);
+        AsyncAddPassengerEvent addPassengerEvent = new AsyncAddPassengerEvent(async, targetEntity, passengerSet, PLUGIN_NAME);
+        Bukkit.getPluginManager().callEvent(addPassengerEvent);
+        if (addPassengerEvent.isCancelled()) return;
+        passengersHashmap.computeIfAbsent(PLUGIN_NAME, k -> new ConcurrentHashMap<>())
+                .computeIfAbsent(targetEntity, k -> ConcurrentHashMap.newKeySet())
+                .addAll(passengerSet);
 
-            if (sendPackets) sendPassengerPacket(async, targetEntity);
+        if (sendPackets) sendPassengerPacket(async, targetEntity);
     }
 
 
@@ -133,8 +133,8 @@ public class PassengerManager {
             AsyncAddPassengerEvent addPassengerEvent = new AsyncAddPassengerEvent(async, targetEntity, Set.of(passengerEntity), pluginName);
             Bukkit.getPluginManager().callEvent(addPassengerEvent);
             if (addPassengerEvent.isCancelled()) return;
-            passengersHashmap.computeIfAbsent(pluginName, k -> new HashMap<>())
-                    .computeIfAbsent(targetEntity, k -> new HashSet<>())
+            passengersHashmap.computeIfAbsent(pluginName, k -> new ConcurrentHashMap<>())
+                    .computeIfAbsent(targetEntity, k -> ConcurrentHashMap.newKeySet())
                     .add(passengerEntity);
             sendPassengerPacket(async,targetEntity);
         }
@@ -144,8 +144,8 @@ public class PassengerManager {
             AsyncAddPassengerEvent addPassengerEvent = new AsyncAddPassengerEvent(async, targetEntity, passengerIDs, pluginName);
             Bukkit.getPluginManager().callEvent(addPassengerEvent);
             if (addPassengerEvent.isCancelled()) return;
-            passengersHashmap.computeIfAbsent(pluginName, k -> new HashMap<>())
-                    .computeIfAbsent(targetEntity, k -> new HashSet<>())
+            passengersHashmap.computeIfAbsent(pluginName, k -> new ConcurrentHashMap<>())
+                    .computeIfAbsent(targetEntity, k -> ConcurrentHashMap.newKeySet())
                     .addAll(passengerIDs);
             sendPassengerPacket(async,targetEntity);
         }
@@ -159,8 +159,8 @@ public class PassengerManager {
             AsyncAddPassengerEvent addPassengerEvent = new AsyncAddPassengerEvent(async, targetEntity, passengerSet, pluginName);
             Bukkit.getPluginManager().callEvent(addPassengerEvent);
             if (addPassengerEvent.isCancelled()) return;
-            passengersHashmap.computeIfAbsent(pluginName, k -> new HashMap<>())
-                    .computeIfAbsent(targetEntity, k -> new HashSet<>())
+            passengersHashmap.computeIfAbsent(pluginName, k -> new ConcurrentHashMap<>())
+                    .computeIfAbsent(targetEntity, k -> ConcurrentHashMap.newKeySet())
                     .addAll(passengerSet);
 
             sendPassengerPacket(async,targetEntity);

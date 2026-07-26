@@ -80,17 +80,7 @@ public class PassengerManager {
 
             Map<String, Map<Integer, Set<Integer>>> tempHashmap = new HashMap<>(passengersHashmap);
             for (Map.Entry<String, Map<Integer, Set<Integer>>> entry : tempHashmap.entrySet()) {
-                Map<Integer, Set<Integer>> pluginMap = entry.getValue();
-                Map<Integer, Set<Integer>> newPluginMap = new HashMap<>();
-
-                for (Map.Entry<Integer, Set<Integer>> pluginEntry : pluginMap.entrySet()) {
-                    int targetEntity = pluginEntry.getKey();
-                    Set<Integer> passengers = new HashSet<>(pluginEntry.getValue());
-                    passengers.removeAll(passengerSet);
-                    if (!passengers.isEmpty()) {
-                        newPluginMap.put(targetEntity, passengers);
-                    }
-                }
+                Map<Integer, Set<Integer>> newPluginMap = copyWithoutPassengers(entry.getValue(), passengerSet);
 
                 if (!newPluginMap.isEmpty()) {
                     passengersHashmap.put(entry.getKey(), newPluginMap);
@@ -99,6 +89,20 @@ public class PassengerManager {
                 }
             }
             if (sendPackets) sendPassengerPackets(false);
+    }
+
+    static Map<Integer, Set<Integer>> copyWithoutPassengers(Map<Integer, Set<Integer>> pluginMap,
+                                                             Set<Integer> passengerIDs) {
+        Map<Integer, Set<Integer>> result = new ConcurrentHashMap<>();
+        pluginMap.forEach((targetEntity, currentPassengers) -> {
+            Set<Integer> remainingPassengers = ConcurrentHashMap.newKeySet();
+            remainingPassengers.addAll(currentPassengers);
+            remainingPassengers.removeAll(passengerIDs);
+            if (!remainingPassengers.isEmpty()) {
+                result.put(targetEntity, remainingPassengers);
+            }
+        });
+        return result;
     }
 
     /**

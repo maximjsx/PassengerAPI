@@ -6,3 +6,7 @@ AutoPassengerDetection:
   EntityDestroyPacket: true
   VehicleExitEvent: true
   VehicleExitPacket: true
+  # When true, an intercepted SET_PASSENGERS packet is re-sent only to the
+  # player it was originally meant for, instead of broadcasting it to every
+  # online player. Recommended. Set to false for the old broadcast behaviour.
+  ResendToViewerOnly: true

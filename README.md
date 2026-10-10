@@ -60,6 +60,10 @@ AutoPassengerDetection:
   EntityDestroyPacket: true
   VehicleExitEvent: true
   VehicleExitPacket: true
+  # When true, an intercepted SET_PASSENGERS packet is re-sent only to the
+  # player it was originally meant for, instead of broadcasting it to every
+  # online player. Recommended. Set to false for the old broadcast behaviour.
+  ResendToViewerOnly: true
 ```
 
 
@@ -151,31 +155,22 @@ Set<Integer> globalPassengers = passengerActions.getGlobalPassengers(targetEntit
 
 ### Listening to events
 
-PassengerAPI also provides events that you can listen to and handle accordingly:
+> [!NOTE]
+> The high-frequency `AsyncAddPassengerEvent`, `AsyncRemovePassengerEvent` and
+> `AsyncPassengerPacketEvent` were **removed** for performance reasons — they were
+> fired from the Netty thread for every single passenger packet. The only remaining
+> event is the (low-frequency) packet-based vehicle exit event below.
+
+PassengerAPI fires an event when a player tries to leave a vehicle via a client
+packet (this also covers 'clientside' vehicles that only exist through packets).
+You can cancel it to keep the player attached:
 
 ```java
 @EventHandler
-public void onAddPassenger(AsyncAddPassengerEvent event) {
-    // The name of the plugin which tries to add these passengers
-    String pluginName = event.getPluginName();
-    int targetEntity = event.getTargetEntityID();
-    Set<Integer> passengers = event.getPassengerList();
-}
-
-@EventHandler
-public void onRemovePassenger(AsyncRemovePassengerEvent event) {
-    String pluginName = event.getPluginName();
-    int targetEntity = event.getTargetEntityID();
-    Set<Integer> removedPassengers = event.getPassengerList();
-    // Perform actions with these properties
-}
-
-@EventHandler
-public void onPassengerPacket(AsyncPassengerPacketEvent event) {
-    int targetEntity = event.getTargetEntityID();
-    Set<Integer> passengers = event.getPassengerList();
-    // Which players should receive the packet (You can modify that list)
-    List<Player> receivers = event.getPacketReceivers();
+public void onPacketVehicleExit(AsyncPacketBasedVehicleExitEvent event) {
+    Player player = event.getPlayer();
+    int vehicleEntityId = event.getVehicleEntityID();
+    // event.setCancelled(true); // prevent the player from dismounting
 }
 ```
 Don't forget to register your event class 

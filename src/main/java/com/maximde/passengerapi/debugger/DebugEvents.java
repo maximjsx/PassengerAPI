@@ -2,9 +2,6 @@ package com.maximde.passengerapi.debugger;
 
 import com.maximde.passengerapi.PassengerAPI;
 import com.maximde.passengerapi.PassengerManager;
-import com.maximde.passengerapi.events.AsyncAddPassengerEvent;
-import com.maximde.passengerapi.events.AsyncPassengerPacketEvent;
-import com.maximde.passengerapi.events.AsyncRemovePassengerEvent;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
@@ -64,30 +61,44 @@ public class DebugEvents implements Listener {
         debugPlayers.remove(event.getPlayer());
     }
 
-    @EventHandler
-    public void onAddPassengerEvent(AsyncAddPassengerEvent event) {
-        for (Player player : debugPlayers) {
-            if(player.getItemInHand().getType() == Material.AIR) continue;
-            player.sendMessage(ChatColor.DARK_GREEN + "[" + ChatColor.YELLOW + "Debug" + ChatColor.DARK_GREEN + "] " + ChatColor.WHITE + "AddPassengerEvent: Plugin=" + event.getPluginName() +
-                    ", TargetEntityID=" + event.getTargetEntityID() + ", PassengersAmount=" + event.getPassengerList().size());
+    /*
+     * These hooks replace the former AsyncAddPassengerEvent / AsyncRemovePassengerEvent /
+     * AsyncPassengerPacketEvent Bukkit events. They are called directly from the PassengerManager
+     * and are effectively free when nobody is in debug mode (single isEmpty() check), avoiding the
+     * cost of firing a Bukkit event for every passenger packet on the Netty thread.
+     */
+
+    public void debugAdd(String pluginName, int targetEntity, int passengerCount) {
+        if (debugPlayers.isEmpty()) return;
+        sendDebug(ChatColor.WHITE + "AddPassenger: Plugin=" + pluginName +
+                ", TargetEntityID=" + targetEntity + ", PassengersAmount=" + passengerCount);
+    }
+
+    public void debugRemove(String pluginName, int targetEntity, int passengerCount) {
+        if (debugPlayers.isEmpty()) return;
+        sendDebug(ChatColor.WHITE + "RemovePassenger: Plugin=" + pluginName +
+                ", TargetEntityID=" + targetEntity + ", PassengersAmount=" + passengerCount);
+    }
+
+    public void debugPacket(int targetEntity, int passengerCount, int receiverCount) {
+        if (debugPlayers.isEmpty()) return;
+        sendDebug(ChatColor.LIGHT_PURPLE + "PassengerPacket: TargetEntityID=" + targetEntity +
+                ", PassengersAmount=" + passengerCount + ", PacketReceiversAmount=" + receiverCount);
+    }
+
+    private void sendDebug(String message) {
+        // These hooks can be invoked from the Netty thread, so touch the Bukkit player API on the main thread.
+        if (passengerAPI.getServer().isPrimaryThread()) {
+            dispatchDebug(message);
+        } else {
+            passengerAPI.getServer().getScheduler().runTask(passengerAPI, () -> dispatchDebug(message));
         }
     }
 
-    @EventHandler
-    public void onRemovePassengerEvent(AsyncRemovePassengerEvent event) {
+    private void dispatchDebug(String message) {
         for (Player player : debugPlayers) {
-            if(player.getItemInHand().getType() == Material.AIR) continue;
-            player.sendMessage(ChatColor.DARK_GREEN + "[" + ChatColor.YELLOW + "Debug" + ChatColor.DARK_GREEN + "] " + ChatColor.WHITE + "RemovePassengerEvent: Plugin=" + event.getPluginName() +
-                    ", TargetEntityID=" + event.getTargetEntityID() + ", PassengersAmount=" + event.getPassengerList().size());
-        }
-    }
-
-    @EventHandler
-    public void onPassengerPacketEvent(AsyncPassengerPacketEvent event) {
-        for (Player player : debugPlayers) {
-            if(player.getItemInHand().getType() == Material.AIR) continue;
-            player.sendMessage(ChatColor.DARK_GREEN + "[" + ChatColor.YELLOW + "Debug" + ChatColor.DARK_GREEN + "] " + ChatColor.LIGHT_PURPLE + "PassengerPacketEvent: TargetEntityID=" + event.getTargetEntityID() +
-                    ", PassengersAmount=" + event.getPassengerList().size() + ", PacketReceiversAmount=" + event.getPacketReceivers().size());
+            if (player.getItemInHand().getType() == Material.AIR) continue;
+            player.sendMessage(ChatColor.DARK_GREEN + "[" + ChatColor.YELLOW + "Debug" + ChatColor.DARK_GREEN + "] " + message);
         }
     }
 

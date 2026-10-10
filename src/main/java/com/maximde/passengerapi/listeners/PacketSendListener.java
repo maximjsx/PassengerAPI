@@ -30,10 +30,13 @@ public class PacketSendListener implements PacketListener {
     public void onPacketSend(PacketSendEvent event) {
         if(event.getPlayer() != null && event.getPacketType() == PacketType.Play.Server.SET_PASSENGERS && this.passengerAPI.getPassengerConfig().isListenToPassengerSet()) {
             WrapperPlayServerSetPassengers packet = new WrapperPlayServerSetPassengers(event);
+            Player viewer = (Player) event.getPlayer();
             for (int passenger : packet.getPassengers()) {
-                isPlayer(passenger, ((Player) event.getPlayer()).getWorld()).map(player -> passengerAPI.getVehicles().put(player, passenger));
+                // The player 'passenger' is riding the vehicle 'packet.getEntityId()'.
+                // Store the VEHICLE id so the dismount handler knows what to remove the player from.
+                findOnlinePlayer(passenger).ifPresent(player -> passengerAPI.getVehicles().put(player, packet.getEntityId()));
             }
-            passengerAPI.getPassengerManager().addPassengers(true, packet.getEntityId(), packet.getPassengers(), true);
+            passengerAPI.getPassengerManager().addInterceptedPassengers(packet.getEntityId(), packet.getPassengers(), viewer);
             event.setCancelled(true);
         }
 
@@ -47,6 +50,20 @@ public class PacketSendListener implements PacketListener {
         return SpigotConversionUtil.getEntityById(world, entityId) != null;
     }
 
+    /**
+     * Resolves an entity id to an online player by scanning the online-player list.
+     * This runs on the netty thread for every intercepted SET_PASSENGERS packet, so it
+     * must not touch world entity storage ({@code getEntityById} does), which is
+     * neither thread-safe nor cheap there.
+     */
+    private Optional<Player> findOnlinePlayer(int entityId) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getEntityId() == entityId) return Optional.of(player);
+        }
+        return Optional.empty();
+    }
+
+    @Deprecated
     public Optional<Player> isPlayer(int entityId, World world) {
         Entity entity = SpigotConversionUtil.getEntityById(world, entityId);
         if(entity instanceof Player player) return Optional.of(player);

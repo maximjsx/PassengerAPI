@@ -10,6 +10,6 @@ public record EntityMountListener(PassengerAPI passengerAPI) implements Listener
     @EventHandler
     public void onEntityMount(EntityMountEvent event) {
         //getMount() -> The entity which will be ridden.
-        if(event.getEntity() instanceof Player player) passengerAPI.getVehicles().put(player, event.getEntity().getEntityId());
+        if(event.getEntity() instanceof Player player) passengerAPI.getVehicles().put(player, event.getMount().getEntityId());
     }
 }

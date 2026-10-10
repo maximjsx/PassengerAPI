@@ -33,6 +33,7 @@ public class PacketReceiveListener implements PacketListener {
                 passengerAPI.getServer().getPluginManager().callEvent(vehicleExitEvent);
                 if(vehicleExitEvent.isCancelled()) return;
                 passengerAPI.getPassengerManager().removePassenger(true, vehicle, player.getEntityId(), true);
+                passengerAPI.getVehicles().remove(player);
             }
         }
     }

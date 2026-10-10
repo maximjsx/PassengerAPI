@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.maximde'
-version = '1.5.1'
+version = '1.5.3'
 
 compileJava.options.encoding = 'UTF-8'
 
@@ -26,8 +26,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.32'
-    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    compileOnly 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor 'org.projectlombok:lombok:1.18.42'
     compileOnly ("com.github.retrooper:packetevents-spigot:2.3.1-SNAPSHOT")
 
     compileOnly "org.spigotmc:spigot-api:1.19.4-R0.1-SNAPSHOT"
